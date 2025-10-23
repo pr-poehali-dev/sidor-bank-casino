@@ -141,10 +141,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Укажите ФИО клиента'})
+                    'body': json.dumps({'success': False, 'error': 'Укажите ФИО клиента'})
                 }
             
-            cur.execute("SELECT id, full_name FROM users WHERE full_name = %s", (full_name,))
+            cur.execute("SELECT id, full_name FROM users WHERE LOWER(full_name) = LOWER(%s)", (full_name,))
             user = cur.fetchone()
             
             if not user:
@@ -153,7 +153,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': f'Клиент "{full_name}" не найден'})
+                    'body': json.dumps({'success': False, 'error': f'Клиент "{full_name}" не найден'})
                 }
             
             balance_field = 'balance_rub' if currency == 'RUB' else 'balance_usd'

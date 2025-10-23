@@ -87,14 +87,15 @@ export default function StaffPanel({ userId, apiUrl }: Props) {
 
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         toast({ title: 'Успех!', description: data.message });
         setTargetFullName('');
         setManageAmount('');
       } else {
-        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+        toast({ title: 'Ошибка', description: data.error || 'Неизвестная ошибка', variant: 'destructive' });
       }
     } catch (error) {
+      console.error('Ошибка управления балансом:', error);
       toast({ title: 'Ошибка', description: 'Не удалось изменить баланс', variant: 'destructive' });
     }
   };
