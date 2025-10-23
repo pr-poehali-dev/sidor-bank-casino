@@ -56,13 +56,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         cur.execute("SELECT balance_rub FROM users WHERE id = %s", (user_id,))
         user = cur.fetchone()
         
-        if not user or user['balance_rub'] < bet_amount:
+        if not user:
             cur.close()
             conn.close()
             return {
                 'statusCode': 400,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Недостаточно средств'})
+                'body': json.dumps({'success': False, 'error': 'Пользователь не найден'})
+            }
+        
+        if float(user['balance_rub']) < bet_amount:
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 400,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'success': False, 'error': 'Недостаточно средств'})
             }
         
         if game_type == 'roulette':
