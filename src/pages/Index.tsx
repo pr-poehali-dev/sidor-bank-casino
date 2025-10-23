@@ -33,6 +33,8 @@ export default function Index() {
   const [fullName, setFullName] = useState('');
   const [pinCode, setPinCode] = useState('');
   const [isLogin, setIsLogin] = useState(true);
+  const [staffPassword, setStaffPassword] = useState('');
+  const [isStaffMode, setIsStaffMode] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -93,6 +95,32 @@ export default function Index() {
     localStorage.removeItem('casino_user');
     setFullName('');
     setPinCode('');
+    setIsStaffMode(false);
+    setStaffPassword('');
+  };
+
+  const handleStaffLogin = () => {
+    if (staffPassword === 'sidor123') {
+      const staffUser: User = {
+        id: 0,
+        full_name: 'Персонал',
+        is_staff: true,
+        balance_rub: 0,
+        balance_usd: 0,
+      };
+      setUser(staffUser);
+      localStorage.setItem('casino_user', JSON.stringify(staffUser));
+      toast({
+        title: 'Добро пожаловать!',
+        description: 'Вход в панель персонала выполнен',
+      });
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Неверный пароль',
+        variant: 'destructive',
+      });
+    }
   };
 
   const updateBalance = (balance_rub: number, balance_usd: number) => {
@@ -112,15 +140,37 @@ export default function Index() {
             <p className="text-gray-300">Онлайн Банк</p>
           </div>
 
-          <Tabs value={isLogin ? 'login' : 'register'} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-[#0f3460]">
-              <TabsTrigger value="login" onClick={() => setIsLogin(true)} className="data-[state=active]:bg-[#f1c40f] data-[state=active]:text-black">
+          <Tabs value={isStaffMode ? 'staff' : (isLogin ? 'login' : 'register')} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-[#0f3460]">
+              <TabsTrigger value="login" onClick={() => { setIsLogin(true); setIsStaffMode(false); }} className="data-[state=active]:bg-[#f1c40f] data-[state=active]:text-black">
                 Вход
               </TabsTrigger>
-              <TabsTrigger value="register" onClick={() => setIsLogin(false)} className="data-[state=active]:bg-[#f1c40f] data-[state=active]:text-black">
+              <TabsTrigger value="register" onClick={() => { setIsLogin(false); setIsStaffMode(false); }} className="data-[state=active]:bg-[#f1c40f] data-[state=active]:text-black">
                 Регистрация
               </TabsTrigger>
+              <TabsTrigger value="staff" onClick={() => setIsStaffMode(true)} className="data-[state=active]:bg-[#e94560] data-[state=active]:text-white">
+                Персонал
+              </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="staff">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="staffPassword" className="text-gray-200">Пароль персонала</Label>
+                  <Input
+                    id="staffPassword"
+                    type="password"
+                    placeholder="Введите пароль"
+                    value={staffPassword}
+                    onChange={(e) => setStaffPassword(e.target.value)}
+                    className="bg-[#0f3460] border-[#e94560]/30 text-white placeholder:text-gray-400"
+                  />
+                </div>
+                <Button onClick={handleStaffLogin} className="w-full bg-[#e94560] hover:bg-[#e94560]/90 text-white font-semibold">
+                  Войти как персонал
+                </Button>
+              </div>
+            </TabsContent>
 
             <TabsContent value={isLogin ? 'login' : 'register'}>
               <div className="space-y-4">
