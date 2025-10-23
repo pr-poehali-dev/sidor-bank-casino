@@ -109,7 +109,7 @@ export default function Index() {
         <Card className="w-full max-w-md p-8 bg-[#16213e]/80 border-[#f1c40f]/20 backdrop-blur-sm">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-[#f1c40f] mb-2">СИДОР БАНК</h1>
-            <p className="text-gray-300">Онлайн Казино</p>
+            <p className="text-gray-300">Онлайн Банк</p>
           </div>
 
           <Tabs value={isLogin ? 'login' : 'register'} className="w-full">
@@ -219,21 +219,21 @@ export default function Index() {
           <TabsContent value="home">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card className="p-6 bg-[#16213e]/80 border-[#f1c40f]/20 hover:border-[#f1c40f]/50 transition-all cursor-pointer">
-                <Icon name="CircleDot" size={48} className="text-[#f1c40f] mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Рулетка</h2>
-                <p className="text-gray-300">Удвойте свою ставку или проиграйте всё!</p>
+                <Icon name="Wallet" size={48} className="text-[#f1c40f] mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">Счета</h2>
+                <p className="text-gray-300">Управление рублёвыми и долларовыми счетами</p>
               </Card>
 
               <Card className="p-6 bg-[#16213e]/80 border-[#f1c40f]/20 hover:border-[#f1c40f]/50 transition-all cursor-pointer">
-                <Icon name="Bomb" size={48} className="text-[#e94560] mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Мины</h2>
-                <p className="text-gray-300">Откройте клетки и не попадите на мину!</p>
+                <Icon name="ArrowLeftRight" size={48} className="text-green-400" />
+                <h2 className="text-2xl font-bold text-white mb-2">Переводы</h2>
+                <p className="text-gray-300">Пополнение, вывод и обмен валют</p>
               </Card>
 
               <Card className="p-6 bg-[#16213e]/80 border-[#f1c40f]/20 hover:border-[#f1c40f]/50 transition-all cursor-pointer">
-                <Icon name="Wallet" size={48} className="text-[#1fc40f] mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Кошелёк</h2>
-                <p className="text-gray-300">Пополнение и вывод средств</p>
+                <Icon name="CircleDot" size={48} className="text-[#e94560] mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">Развлечения</h2>
+                <p className="text-gray-300">Рулетка и мини-игры для клиентов</p>
               </Card>
             </div>
           </TabsContent>
