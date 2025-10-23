@@ -1,0 +1,13 @@
+{
+  "tests": [
+    {
+      "name": "Get wallet balance",
+      "method": "GET",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
