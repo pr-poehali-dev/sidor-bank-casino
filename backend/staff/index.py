@@ -94,21 +94,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             if decision == 'approved':
+                currency_field = 'balance_rub' if request['currency'] == 'RUB' else 'balance_usd'
                 if request['type'] == 'deposit':
                     cur.execute(
-                        "UPDATE users SET balance_rub = balance_rub + %s WHERE id = %s",
+                        f"UPDATE users SET {currency_field} = {currency_field} + %s WHERE id = %s",
                         (request['amount'], request['user_id'])
                     )
                 elif request['type'] == 'withdraw':
                     cur.execute(
-                        "UPDATE users SET balance_rub = balance_rub - %s WHERE id = %s",
+                        f"UPDATE users SET {currency_field} = {currency_field} - %s WHERE id = %s",
                         (request['amount'], request['user_id'])
                     )
             
-            cur.execute(
-                "UPDATE requests SET status = %s, processed_by = %s, processed_at = %s WHERE id = %s",
-                (decision, user_id, datetime.now(), request_id)
-            )
+            if int(user_id) == 0:
+                cur.execute(
+                    "UPDATE requests SET status = %s, processed_at = %s WHERE id = %s",
+                    (decision, datetime.now(), request_id)
+                )
+            else:
+                cur.execute(
+                    "UPDATE requests SET status = %s, processed_by = %s, processed_at = %s WHERE id = %s",
+                    (decision, user_id, datetime.now(), request_id)
+                )
             conn.commit()
             cur.close()
             conn.close()
