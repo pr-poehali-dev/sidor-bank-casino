@@ -182,7 +182,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({
                     'success': True,
-                    'balance': new_balance[balance_field] if new_balance else 0,
+                    'balance': float(new_balance[balance_field]) if new_balance else 0,
                     'message': f'{user["full_name"]}: {operation_text} {amount}{currency_symbol}'
                 })
             }
