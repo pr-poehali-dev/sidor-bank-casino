@@ -93,17 +93,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Заявка не найдена'})
                 }
             
+            currency_field = 'balance_rub' if request['currency'] == 'RUB' else 'balance_usd'
+            
             if decision == 'approved':
-                currency_field = 'balance_rub' if request['currency'] == 'RUB' else 'balance_usd'
-                
                 if request['type'] == 'withdraw':
                     cur.execute(f"SELECT {currency_field} FROM users WHERE id = %s", (request['user_id'],))
                     current_balance = cur.fetchone()
                     if not current_balance or float(current_balance[currency_field]) < float(request['amount']):
-                        cur.execute(
-                            "UPDATE requests SET status = 'rejected', processed_at = %s WHERE id = %s",
-                            (datetime.now(), request_id)
-                        )
+                        if int(user_id) == 0:
+                            cur.execute(
+                                "UPDATE requests SET status = 'rejected', processed_at = %s WHERE id = %s",
+                                (datetime.now(), request_id)
+                            )
+                        else:
+                            cur.execute(
+                                "UPDATE requests SET status = 'rejected', processed_by = %s, processed_at = %s WHERE id = %s",
+                                (user_id, datetime.now(), request_id)
+                            )
                         conn.commit()
                         cur.close()
                         conn.close()
@@ -126,6 +132,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         f"UPDATE users SET {currency_field} = {currency_field} - %s WHERE id = %s",
                         (request['amount'], request['user_id'])
                     )
+                conn.commit()
             
             if int(user_id) == 0:
                 cur.execute(

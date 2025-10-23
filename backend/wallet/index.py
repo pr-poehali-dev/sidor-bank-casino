@@ -82,13 +82,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             balance = cur.fetchone()
             
             if from_currency == 'RUB' and to_currency == 'USD':
-                if balance['balance_rub'] < amount:
+                if float(balance['balance_rub']) < amount:
                     cur.close()
                     conn.close()
                     return {
                         'statusCode': 400,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Недостаточно рублей'})
+                        'body': json.dumps({'success': False, 'error': 'Недостаточно рублей'})
                     }
                 
                 usd_amount = amount / EXCHANGE_RATE
@@ -98,13 +98,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 )
             
             elif from_currency == 'USD' and to_currency == 'RUB':
-                if balance['balance_usd'] < amount:
+                if float(balance['balance_usd']) < amount:
                     cur.close()
                     conn.close()
                     return {
                         'statusCode': 400,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Недостаточно долларов'})
+                        'body': json.dumps({'success': False, 'error': 'Недостаточно долларов'})
                     }
                 
                 rub_amount = amount * EXCHANGE_RATE
