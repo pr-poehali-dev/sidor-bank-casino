@@ -42,17 +42,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    cur.execute("SELECT is_staff FROM users WHERE id = %s", (user_id,))
-    staff_check = cur.fetchone()
-    
-    if not staff_check or not staff_check['is_staff']:
-        cur.close()
-        conn.close()
-        return {
-            'statusCode': 403,
-            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Доступ запрещен'})
-        }
+    if int(user_id) != 0:
+        cur.execute("SELECT is_staff FROM users WHERE id = %s", (user_id,))
+        staff_check = cur.fetchone()
+        
+        if not staff_check or not staff_check['is_staff']:
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 403,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'Доступ запрещен'})
+            }
     
     if method == 'GET':
         cur.execute("""
@@ -122,19 +123,43 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         elif action == 'manage_balance':
-            target_user_id = body.get('user_id')
+            full_name = body.get('full_name', '').strip()
             amount = float(body.get('amount', 0))
             operation = body.get('operation')
+            currency = body.get('currency', 'RUB')
+            
+            if not full_name:
+                cur.close()
+                conn.close()
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Укажите ФИО клиента'})
+                }
+            
+            cur.execute("SELECT id, full_name FROM users WHERE full_name = %s", (full_name,))
+            user = cur.fetchone()
+            
+            if not user:
+                cur.close()
+                conn.close()
+                return {
+                    'statusCode': 404,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': f'Клиент "{full_name}" не найден'})
+                }
+            
+            balance_field = 'balance_rub' if currency == 'RUB' else 'balance_usd'
             
             if operation == 'add':
                 cur.execute(
-                    "UPDATE users SET balance_rub = balance_rub + %s WHERE id = %s RETURNING balance_rub",
-                    (amount, target_user_id)
+                    f"UPDATE users SET {balance_field} = {balance_field} + %s WHERE id = %s RETURNING {balance_field}",
+                    (amount, user['id'])
                 )
             elif operation == 'subtract':
                 cur.execute(
-                    "UPDATE users SET balance_rub = balance_rub - %s WHERE id = %s RETURNING balance_rub",
-                    (amount, target_user_id)
+                    f"UPDATE users SET {balance_field} = {balance_field} - %s WHERE id = %s RETURNING {balance_field}",
+                    (amount, user['id'])
                 )
             
             conn.commit()
@@ -142,13 +167,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             cur.close()
             conn.close()
             
+            currency_symbol = '₽' if currency == 'RUB' else '$'
+            operation_text = 'зачислено' if operation == 'add' else 'списано'
+            
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({
                     'success': True,
-                    'balance': new_balance['balance_rub'] if new_balance else 0,
-                    'message': 'Баланс изменен'
+                    'balance': new_balance[balance_field] if new_balance else 0,
+                    'message': f'{user["full_name"]}: {operation_text} {amount}{currency_symbol}'
                 })
             }
     

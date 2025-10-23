@@ -23,8 +23,9 @@ interface Request {
 
 export default function StaffPanel({ userId, apiUrl }: Props) {
   const [requests, setRequests] = useState<Request[]>([]);
-  const [targetUserId, setTargetUserId] = useState('');
+  const [targetFullName, setTargetFullName] = useState('');
   const [manageAmount, setManageAmount] = useState('');
+  const [manageCurrency, setManageCurrency] = useState('RUB');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -70,11 +71,10 @@ export default function StaffPanel({ userId, apiUrl }: Props) {
   };
 
   const manageBalance = async (operation: string) => {
-    const id = parseInt(targetUserId);
     const amount = parseFloat(manageAmount);
 
-    if (isNaN(id) || isNaN(amount) || amount <= 0) {
-      toast({ title: 'Ошибка', description: 'Введите корректные данные', variant: 'destructive' });
+    if (!targetFullName.trim() || isNaN(amount) || amount <= 0) {
+      toast({ title: 'Ошибка', description: 'Введите ФИО и корректную сумму', variant: 'destructive' });
       return;
     }
 
@@ -82,14 +82,14 @@ export default function StaffPanel({ userId, apiUrl }: Props) {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-Id': userId.toString() },
-        body: JSON.stringify({ action: 'manage_balance', user_id: id, amount, operation }),
+        body: JSON.stringify({ action: 'manage_balance', full_name: targetFullName, amount, operation, currency: manageCurrency }),
       });
 
       const data = await response.json();
 
       if (data.success) {
         toast({ title: 'Успех!', description: data.message });
-        setTargetUserId('');
+        setTargetFullName('');
         setManageAmount('');
       } else {
         toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
@@ -105,21 +105,21 @@ export default function StaffPanel({ userId, apiUrl }: Props) {
         <h2 className="text-3xl font-bold text-[#f1c40f] mb-6">Панель персонала</h2>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-xl font-semibold text-white mb-4">Управление балансом</h3>
-            <div className="space-y-4">
-              <div>
-                <Label className="text-gray-200">ID пользователя</Label>
+          <div className="md:col-span-2">
+            <h3 className="text-xl font-semibold text-white mb-4">Управление балансом клиента</h3>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="md:col-span-2">
+                <Label className="text-gray-200">ФИО клиента</Label>
                 <Input
-                  type="number"
-                  value={targetUserId}
-                  onChange={(e) => setTargetUserId(e.target.value)}
-                  placeholder="1"
+                  type="text"
+                  value={targetFullName}
+                  onChange={(e) => setTargetFullName(e.target.value)}
+                  placeholder="Иванов Иван Иванович"
                   className="bg-[#0f3460] border-[#f1c40f]/30 text-white"
                 />
               </div>
               <div>
-                <Label className="text-gray-200">Сумма (₽)</Label>
+                <Label className="text-gray-200">Сумма</Label>
                 <Input
                   type="number"
                   value={manageAmount}
@@ -128,26 +128,27 @@ export default function StaffPanel({ userId, apiUrl }: Props) {
                   className="bg-[#0f3460] border-[#f1c40f]/30 text-white"
                 />
               </div>
-              <div className="flex gap-2">
-                <Button onClick={() => manageBalance('add')} className="flex-1 bg-green-600 hover:bg-green-700">
-                  <Icon name="Plus" size={20} className="mr-2" />
-                  Пополнить
-                </Button>
-                <Button onClick={() => manageBalance('subtract')} className="flex-1 bg-red-600 hover:bg-red-700">
-                  <Icon name="Minus" size={20} className="mr-2" />
-                  Отнять
-                </Button>
+              <div>
+                <Label className="text-gray-200">Валюта</Label>
+                <select
+                  value={manageCurrency}
+                  onChange={(e) => setManageCurrency(e.target.value)}
+                  className="w-full h-10 px-3 rounded-md bg-[#0f3460] border border-[#f1c40f]/30 text-white"
+                >
+                  <option value="RUB">Рубли (₽)</option>
+                  <option value="USD">Доллары ($)</option>
+                </select>
               </div>
             </div>
-          </div>
-
-          <div>
-            <h3 className="text-xl font-semibold text-white mb-4">Статистика</h3>
-            <div className="space-y-3">
-              <div className="p-4 bg-[#0f3460]/50 rounded-lg">
-                <p className="text-gray-300 text-sm">Активных заявок</p>
-                <p className="text-3xl font-bold text-[#f1c40f]">{requests.length}</p>
-              </div>
+            <div className="flex gap-2 mt-4">
+              <Button onClick={() => manageBalance('add')} className="flex-1 bg-green-600 hover:bg-green-700">
+                <Icon name="Plus" size={20} className="mr-2" />
+                Зачислить
+              </Button>
+              <Button onClick={() => manageBalance('subtract')} className="flex-1 bg-red-600 hover:bg-red-700">
+                <Icon name="Minus" size={20} className="mr-2" />
+                Списать
+              </Button>
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@
       "name": "Get pending requests",
       "method": "GET",
       "headers": {
-        "X-User-Id": "1"
+        "X-User-Id": "0"
       },
       "expectedStatus": 200,
       "bodyMatcher": "partial"
